@@ -14,10 +14,10 @@ Usage: battery-info [-avrtigG] [-l --levels]
     -i            display all battery info
     -s            display graph (requires spark)
     -S            display only graph (requires spark)
-    
+
     Usage levels:
     Change the levels at which the indicator changes
-    
+
 EOF
 }
 
@@ -84,34 +84,6 @@ fi
 [[ -z "$BATTERY_STATUS" ]] && exit 1
 }
 
-# Apply the correct color to the battery status prompt
-apply_colors() {
-# Green
-if [[ $BATTERY_STATUS -ge 65 ]]; then
-  if ((output_tmux)); then
-    COLOR="#[fg=$good_color]"
-  else
-    COLOR=$good_color
-  fi
-
-# Yellow
-elif [[ $BATTERY_STATUS -ge 25 ]] && [[ $BATTERY_STATUS -lt 75 ]]; then
-  if ((output_tmux)); then
-    COLOR="#[fg=$middle_color]"
-  else
-    COLOR=$middle_color
-  fi
-
-# Red
-elif [[ $BATTERY_STATUS -lt 25 ]]; then
-  if ((output_tmux)); then
-    COLOR="#[fg=$warn_color]"
-  else
-    COLOR=$warn_color
-  fi
-fi
-}
-
 print_status() {
 # Print the battery status
 if ((connected)); then
@@ -175,5 +147,4 @@ done
 
 
 run_battery
-apply_colors
 print_status
