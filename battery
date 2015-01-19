@@ -2,18 +2,22 @@
 
 usage() {
 cat <<EOF
-battery: usage:
+battery-info, version 0.1
 
-  general:
-    -h, --help    print this message
-    -p            use pmset (more accurate)
-    -t            output tmux status bar format
-    -a            output ascii bar instead of spark's
 
-  colors:
-    -g <color>    good battery level      default: green or 1;32
-    -m <color>    middle battery level    default: yellow or 1;33
-    -w <color>    warn battery level      default: red or 0;31
+Usage: battery-info [-avrtigG] [-l --levels]
+    -h,--help,?   print this message
+    -a            use actual battery values (less accurate)
+    -v            verbose output (include remaining time)
+    -r            only display remaining time
+    -t            change status symbol to text
+    -i            display all battery info
+    -s            display graph (requires spark)
+    -S            display only graph (requires spark)
+    
+    Usage levels:
+    Change the levels at which the indicator changes
+    
 EOF
 }
 
@@ -24,10 +28,11 @@ fi
 
 # For default behavior
 setDefaults() {
-  pmset_on=0
-  output_tmux=0
-  ascii=0
-  ascii_bar='=========='
+  actual=0
+  output_zsh=0
+  graph=0
+  verbose=0
+  remaining=0
   good_color="1;32"
   middle_color="1;33"
   warn_color="0;31"
@@ -82,7 +87,7 @@ fi
 # Apply the correct color to the battery status prompt
 apply_colors() {
 # Green
-if [[ $BATTERY_STATUS -ge 75 ]]; then
+if [[ $BATTERY_STATUS -ge 65 ]]; then
   if ((output_tmux)); then
     COLOR="#[fg=$good_color]"
   else
@@ -130,34 +135,32 @@ fi
 
 if ((output_tmux)); then
   printf "%s%s %s%s" "$COLOR" "[$BATTERY_STATUS%]" "$GRAPH" "#[default]"
+
+elif ((output_zsh)); then
+  RETURN="$BATTERY_STATUS%%"
+
+  printf "$RETURN%% $GRAPH"
+
 else
+  # printf "$BATTERY_STATUS $GRAPH"
   printf "\e[0;%sm%s %s \e[m\n"  "$COLOR" "[$BATTERY_STATUS%]"  "$GRAPH"
 fi
 }
 
 # Read args
-while getopts ":g:m:w:tap" opt; do
+while getopts ":zitap" opt; do
   case $opt in
-    g)
-      good_color=$OPTARG
+    i)
+      ioreg -n AppleSmartBattery -r
       ;;
-    m)
-      middle_color=$OPTARG
-      ;;
-    w)
-      warn_color=$OPTARG
-      ;;
-    t)
-      output_tmux=1
-      good_color="green"
-      middle_color="yellow"
-      warn_color="red"
+    z)
+      output_zsh=1
       ;;
     a)
-      ascii=1
+      echo "Option -$opt not finished"
       ;;
     p)
-      pmset_on=1
+      echo "Option -$opt not finished"
       ;;
     \?)
       echo "Invalid option: -$OPTARG"
